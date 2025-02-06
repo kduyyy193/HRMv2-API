@@ -2,14 +2,22 @@ from fastapi import Depends, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from app.models.users import UserRole
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-
 
 def get_current_user(token: str = Security(oauth2_scheme)):
+    if SECRET_KEY is None or ALGORITHM is None:
+        raise ValueError(
+            "SECRET_KEY and ALGORITHM must be set in the env variables."
+        )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")

@@ -1,6 +1,4 @@
-from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from starlette.responses import JSONResponse
 from app.models.users import User
 from app.schemas.users import UserCreate
 
@@ -9,34 +7,18 @@ def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
 
+def get_user_by_username(db: Session, username: str):
+    return db.query(User).filter(User.username == username).first()
+
+
 def create_user(db: Session, user: UserCreate, hashed_password: str):
-    username = db.query(User).filter(User.username == user.username).first()
-    if username:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already taken"
-        )
-
-    db_user_by_email = db.query(User).filter(User.email == user.email).first()
-    if db_user_by_email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already taken"
-        )
-
     db_user = User(
         username=user.username, email=user.email, password_hash=hashed_password
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return JSONResponse(
-        status_code=status.HTTP_201_CREATED,
-        content={
-            "messages": "Success",
-            "data": db_user.__dict__
-        },
-    )
+    return db_user
 
 
 def get_users(db: Session):
