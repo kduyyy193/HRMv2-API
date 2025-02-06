@@ -11,6 +11,10 @@ def get_user_by_username(db: Session, username: str):
     return db.query(User).filter(User.username == username).first()
 
 
+def get_user_by_id(db: Session, user_id: int):
+    return db.query(User).filter(User.id == user_id).first()
+
+
 def create_user(db: Session, user: UserCreate, hashed_password: str):
     db_user = User(
         username=user.username, email=user.email, password_hash=hashed_password
@@ -35,7 +39,7 @@ def update_user(db: Session, user_id: int, updates: dict):
     return user
 
 
-def delete_user(db: Session, user_id: int):
+def delete_user_by_id(db: Session, user_id: int):
     user = db.query(User).filter(User.id == user_id).first()
     if user:
         db.delete(user)

@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from app.models.users import UserRole
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.repositories.users import get_user_by_username
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -18,6 +18,8 @@ ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -69,12 +71,15 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         or ALGORITHM is None
         or ACCESS_TOKEN_EXPIRE_MINUTES is None
     ):
-        raise ValueError(
-            "Something went wrong with env file."
-        )
+        raise ValueError("Missing required environment variables.")
+
     to_encode = data.copy()
-    expire = datetime.utcnow() + (
-        expires_delta or timedelta(minutes=float(ACCESS_TOKEN_EXPIRE_MINUTES))
-    )
+    if expires_delta is None:
+        expires_delta = timedelta(minutes=float(ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    try:
+        encoded_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    except Exception as e:
+        raise ValueError(f"Error encoding the token: {str(e)}")
+    return encoded_token
