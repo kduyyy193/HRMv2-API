@@ -30,6 +30,4 @@ instance/
 
 *.docker
 
-*.yml
-
 test.db
