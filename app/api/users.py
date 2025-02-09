@@ -6,7 +6,8 @@ from app.services.auth import get_admin_user, get_current_user
 from app.schemas.users import UserResponse
 from app.repositories.users import (
     delete_user_by_id,
-    get_users
+    get_users,
+    update_user_by_id
 )
 
 router = APIRouter()
@@ -28,6 +29,15 @@ def get_all_users(
     if current_user["role"] != UserRole.admin:
         raise HTTPException(status_code=403, detail="Permission denied")
     return get_users(db)
+
+
+@router.post("/{user_id}")
+def update_user(
+    user_id: int,
+    updates: dict,
+    db: Session = Depends(get_db)
+):
+    return update_user_by_id(db, user_id, updates)
 
 
 @router.delete("/{user_id}")

@@ -29,13 +29,17 @@ def get_users(db: Session):
     return db.query(User).all()
 
 
-def update_user(db: Session, user_id: int, updates: dict):
-    user = db.query(User).filter(User.id == user_id).first()
-    if user:
-        for key, value in updates.items():
+def update_user_by_id(db: Session, user_id: int, updates: dict):
+    user = db.query(User).filter(User.id == user_id).one()
+    if not user:
+        return {"error": "User not found"}
+
+    for key, value in updates.items():
+        if hasattr(user, key):
             setattr(user, key, value)
-        db.commit()
-        db.refresh(user)
+
+    db.commit()
+    db.refresh(user)
     return user
 
 
