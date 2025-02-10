@@ -5,6 +5,7 @@ from app.models.users import UserRole
 from app.services.auth import get_admin_user, get_current_user
 from app.schemas.users import UserResponse
 from app.repositories.users import (
+    count_users,
     delete_user_by_id,
     get_users,
     update_user_by_id
@@ -33,7 +34,15 @@ def get_all_users(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Permission denied"
         )
-    return get_users(db)
+    users = get_users(db, skip=skip * limit, limit=limit)
+    total_users = count_users(db)
+
+    return {
+        "total_count": total_users,
+        "page": skip,
+        "size": limit,
+        "data": users
+    }
 
 
 @router.post("/{user_id}")

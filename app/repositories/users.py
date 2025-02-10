@@ -29,6 +29,10 @@ def get_users(db: Session, skip: int = 0, limit: int = 10):
     return db.query(User).offset(skip).limit(limit).all()
 
 
+def count_users(db: Session):
+    return db.query(User).count()
+
+
 def update_user_by_id(db: Session, user_id: int, updates: dict):
     user = db.query(User).filter(User.id == user_id).one()
     if not user:
