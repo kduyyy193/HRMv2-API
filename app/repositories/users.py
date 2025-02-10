@@ -25,8 +25,8 @@ def create_user(db: Session, user: UserCreate, hashed_password: str):
     return db_user
 
 
-def get_users(db: Session):
-    return db.query(User).all()
+def get_users(db: Session, skip: int = 0, limit: int = 10):
+    return db.query(User).offset(skip).limit(limit).all()
 
 
 def update_user_by_id(db: Session, user_id: int, updates: dict):
